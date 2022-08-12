@@ -24,7 +24,7 @@
         ip_3: 172.20.59.113
         disk_offfering: 81993d0744e04408ab22fa342ed6f0f2
 
-    - create_vm_instance:
+    - zstack.mn1.create_vm_instance:
         instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
         storage_uuid_for_root: $zstack_ps
         image_uuid: $linux_image

@@ -29,4 +29,5 @@ const (
 	ip1    = "ip1"
 	ip2    = "ip2"
 	ip3    = "ip3"
+	api    = "api"
 )
