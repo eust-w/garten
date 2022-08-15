@@ -35,6 +35,14 @@
         ip: 172.20.59.111
         return: vm_1_1
 
+    - while:
+        tem:
+          - run:
+              34: 23
+        tem2:
+          - run:
+              43: 12
+
     - sleep:
         time: 30
 

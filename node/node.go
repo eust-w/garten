@@ -2,6 +2,7 @@ package node
 
 // Node 流水线上的一个产品
 type Node struct {
+	Tag        string                 // 当前Node的名称
 	RawData    interface{}            //要运行的数据
 	Next       *Node                  // 接下来要运行的内容
 	Stack      map[string]interface{} // 当前节点内生效的变量
