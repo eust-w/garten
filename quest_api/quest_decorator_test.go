@@ -81,5 +81,15 @@ func TestDecoratorTags2(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(out)
+	q := out.(map[string]interface{})["results"].([]interface{})[0].(map[string]interface{})["inventories"].([]interface{})
+	for k, v := range q {
+		if v.(map[string]interface{})["tag"] == "ztest_idle" {
+			fmt.Println(k, v)
+		}
+	}
+	for k, v := range q {
+		if v.(map[string]interface{})["tag"] == "ztest_running" {
+			fmt.Println(k, v)
+		}
+	}
 }
