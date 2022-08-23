@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strings"
 )
@@ -26,7 +27,7 @@ type MyApi struct {
 	password  string
 }
 
-func Decorator(z MyApi, funcName string, para map[string]interface{}) (map[string]interface{}, error) {
+func Decorator(z MyApi, funcName string, para map[string]interface{}) (any, error) {
 	m, _ := reflect.TypeOf(z).MethodByName(funcName)
 	v := make([]reflect.Value, 0)
 	v = append(v, reflect.ValueOf(z))
@@ -92,6 +93,95 @@ func (Z MyApi) CreateZone(para map[string]interface{}) (int, string, map[string]
 	return apiType, url, header, body
 }
 
+func (Z MyApi) RevertVmFromSnapshotGroup(para map[string]interface{}) (int, string, map[string]interface{}, map[string]interface{}) {
+	apiType := PutApi
+	url := Z.urlPrefix + "volume-snapshots/group/" + para["uuid"].(string) + "/actions"
+	header := Z.headers
+	body := map[string]interface{}{
+		"revertVmFromSnapshotGroup": map[string]interface{}{},
+		"systemTags":                nil,
+		"userTags":                  nil,
+	}
+	return apiType, url, header, body
+}
+
+func (Z MyApi) StopVmInstance(para map[string]interface{}) (int, string, map[string]interface{}, map[string]interface{}) {
+	apiType := PutApi
+	url := Z.urlPrefix + "vm-instances/" + para["uuid"].(string) + "/actions"
+	header := Z.headers
+	body := map[string]interface{}{
+		"stopVmInstance": map[string]string{
+			"type": "grace",
+		},
+		"systemTags": nil,
+		"userTags":   nil,
+	}
+	return apiType, url, header, body
+}
+
+func (Z MyApi) QueryVmInstance(para map[string]interface{}) (int, string, map[string]interface{}, map[string]interface{}) {
+	apiType := GetApi
+	url := Z.urlPrefix + "vm-instances/" + para["uuid"].(string)
+	header := Z.headers
+	body := map[string]interface{}{}
+	return apiType, url, header, body
+}
+
+func (Z MyApi) DetachTagFromResources(para map[string]interface{}) (int, string, map[string]interface{}, map[string]interface{}) {
+	apiType := DeleteApi
+	url := Z.urlPrefix + "tags/" + para["tagUuid"].(string) + "/resources?resourceUuids=" + para["resourceUuids"].(string)
+	header := Z.headers
+	body := map[string]interface{}{}
+	return apiType, url, header, body
+}
+
+func (Z MyApi) AttachTagToResources(para map[string]interface{}) (int, string, map[string]interface{}, map[string]interface{}) {
+	apiType := PostApi
+	url := Z.urlPrefix + "tags/" + para["tagUuid"].(string) + "/resources"
+	header := Z.headers
+	body := map[string]interface{}{
+		"params": map[string]interface{}{
+			"resourceUuids": []string{
+				para["uuid"].(string)},
+		},
+		"systemTags": nil,
+		"userTags":   nil,
+	}
+	return apiType, url, header, body
+}
+
+func (Z MyApi) QueryTag(para map[string]interface{}) (int, string, map[string]interface{}, map[string]interface{}) {
+	apiType := GetApi
+	url := Z.urlPrefix + "tags/" + para["uuid"].(string)
+	header := Z.headers
+	body := map[string]interface{}{}
+	return apiType, url, header, body
+}
+
+func (Z MyApi) QuerySystemTag(para map[string]interface{}) (int, string, map[string]interface{}, map[string]interface{}) {
+	apiType := GetApi
+	url := Z.urlPrefix + "system-tags/" + para["uuid"].(string)
+	header := Z.headers
+	body := map[string]interface{}{}
+	return apiType, url, header, body
+}
+
+func (Z MyApi) ZqlVmTagList(para map[string]interface{}) (int, string, map[string]interface{}, map[string]interface{}) {
+	apiType := GetApi
+	zql := "query usertag where tagPatternUuid in (query accountResourceRef.resourceUuid where resourceType='TagPatternVO')"
+	rawUrl := Z.urlPrefix + "zql"
+	params := url.Values{}
+	Url, err := url.Parse(rawUrl)
+	if err != nil {
+		panic(err)
+	}
+	params.Set("zql", zql)
+	Url.RawQuery = params.Encode()
+	header := Z.headers
+	body := map[string]interface{}{}
+	return apiType, Url.String(), header, body
+}
+
 func (Z MyApi) CreateVmInstance(para map[string]interface{}) (int, string, map[string]interface{}, map[string]interface{}) {
 	apiType := PostApi
 	url := Z.urlPrefix + "vm-instances"
@@ -138,7 +228,7 @@ func put(url string, header map[string]interface{}, body map[string]interface{})
 	err = json.Unmarshal(out, &p)
 	return p, err
 }
-func get(url string, header map[string]interface{}, body map[string]interface{}) (map[string]interface{}, error) {
+func get(url string, header map[string]interface{}, body map[string]interface{}) (any, error) {
 	bo, _ := json.Marshal(body)
 	b := strings.NewReader(string(bo))
 	req, _ := http.NewRequest("GET", url, b)
@@ -155,7 +245,7 @@ func get(url string, header map[string]interface{}, body map[string]interface{})
 	if err != nil {
 		return nil, err
 	}
-	p := make(map[string]interface{}, 0)
+	var p any
 	err = json.Unmarshal(out, &p)
 	return p, err
 }
