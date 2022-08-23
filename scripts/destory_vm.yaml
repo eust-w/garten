@@ -1,0 +1,1360 @@
+- # 第零个情景 单台linux云主机测试(基础、综合、sas)
+  env:
+    - global:
+        management_ip: 172.20.1.34
+        port: 8080
+        admin: admin
+        password: password
+        des: '单台linux云主机基础、综合、计算、SAS存储, 正向网络'
+
+    - define:
+        ssd_uuid: 85fd917c00d14904b01c09b72012aece
+        sas_uuid: 0cf9e00db3624e16bd153ccd4aeabb61
+        zstack_ps: 2756333a6dd748a787c61bab1cb10aac
+        cluster_uuid_1: 922a863b0fe24f14ae27121666f0301f
+        linux_image: 518667d6a22a45dba9e7a6c7d5c6d667
+        windows_image: b4339ac8c1d246ae82fa36af97659ebd
+        public_net: d1461abf3bde4645916bc0da222b647f
+        private_net_1: 09ff3a227da4490c876840f6fbde9d41
+        private_net_2: 09ff3a227da4490c876840f6fbde9d41
+        host_uuid_1: bd219d7139e4477f8af8b342a31d98af
+        host_uuid_2: 38a2f283ece44ec48b72559015cd3bfd
+        ip_1: 172.20.59.111
+        ip_2: 172.20.59.112
+        ip_3: 172.20.59.113
+        disk_offfering: 81993d0744e04408ab22fa342ed6f0f2
+
+    - zstack.mn1.create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $linux_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_1'
+        ip: 172.20.59.111
+        return: vm_1_1
+
+    - while:
+        tem:
+          - run:
+              34: 23
+        tem2:
+          - run:
+              43: 12
+
+    - sleep:
+        time: 30
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $sas_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_1
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_1
+        vm_instance_uuid: url$vm_1_1
+
+    - sleep:
+        time: 30
+
+    - attach_l3_to_vm:
+        vm_uuid: url$vm_1_1
+        l3_net_uuid: $private_net_1
+
+    - sleep:
+        time: 60
+
+    - ssh_cmd:
+        cmd: /zapt/apt_sh/ui_sh/ip_add.sh eth1 183.183.166.6
+        host: 172.20.59.111
+        port: 22
+        pwd: password
+        sys: linux
+        username: root
+    - ssh_cmd:
+        cmd: /zapt/apt_sh/ui_sh/ip_add.sh eth1 183.183.166.9
+        host: 127.0.0.1
+        port: 22
+        pwd: password
+        sys: linux
+        username: root
+
+  unixbench:
+    ips:
+      '172.20.59.111':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        excute_count: 3
+        'i': 3
+        'c': 1
+  stream:
+    ips:
+      '172.20.59.111':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        excute_count: 3
+  netperf:
+    ips:
+      '172.20.59.111':
+          'sys': 'linux'
+          'username': 'root'
+          'pwd': 'password'
+          'port': 22
+          excute_count: 3
+  ebizzy:
+    ips:
+      '172.20.59.111':
+          'sys': 'linux'
+          'username': 'root'
+          'pwd': 'password'
+          'port': 22
+          excute_count: 3
+#  ping:
+#    ips:
+#      127.0.0.1:
+#        c: 5
+#        excute_count: 5
+#        port: 22
+#        pwd: password
+#        sys: linux
+#        target: 183.183.166.6
+#        username: root
+#  iperf:
+#    ips:
+#      127.0.0.1:
+#        port: 22
+#        pwd: password
+#        sys: linux
+#        username: root
+#    serverips:
+#      172.20.59.111:
+#        port: 22
+#        pwd: password
+#        sys: linux
+#        username: root
+#    tcpnothread:
+#      excute_count: 5
+#      target: 183.183.166.6
+#    tcpthread:
+#      excute_count: 5
+#      target: 183.183.166.6
+#    udpnothread10g:
+#      excute_count: 5
+#      target: 183.183.166.6
+#    udpnothread1g:
+#      excute_count: 5
+#      target: 183.183.166.6
+#    udpthread10g:
+#      excute_count: 5
+#      target: 183.183.166.6
+#    udpthread1g:
+#      excute_count: 5
+#      target: 183.183.166.6
+  fio:
+    ips:
+      '172.20.59.111':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        'dev': '/dev/vdb'
+    seqwrite:
+      excute_count: 5
+    seqread:
+      excute_count: 5
+    randwrite:
+      excute_count: 5
+    randread:
+      excute_count: 5
+    latwrite:
+      excute_count: 5
+    latread:
+      excute_count: 5
+
+
+- # 第一个情景 单台linux云主机测试（ssd）
+  env:
+    - global:
+        management_ip: 172.20.1.34
+        port: 8080
+        admin: admin
+        password: password
+        des: '单台linux云主机SSD存储、反向网络'
+
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_1
+        return: destory_vm_1_1
+
+    - sleep:
+        time: 3
+
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_1
+
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_1
+    - sleep:
+        time: 3
+
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_1
+
+    - sleep:
+        time: 30
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $linux_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_1'
+        ip: 172.20.59.111
+        return: vm_1_1
+
+    - sleep:
+        time: 30
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $ssd_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_1
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_1
+        vm_instance_uuid: url$vm_1_1
+
+#    - ssh_cmd:
+#        cmd: /zapt/apt_sh/ui_sh/ip_add.sh eth1 183.183.166.6
+#        host: 127.0.0.1
+#        port: 22
+#        pwd: password
+#        sys: linux
+#        username: root
+#    - ssh_cmd:
+#        cmd: /zapt/apt_sh/ui_sh/ip_add.sh eth1 183.183.166.9
+#        host: 172.20.59.111
+#        port: 22
+#        pwd: password
+#        sys: linux
+#        username: root
+
+    - sleep:
+        time: 30
+
+  fio:
+      ips:
+          '172.20.59.111':
+              'sys': 'linux'
+              'username': 'root'
+              'pwd': 'password'
+              'port': 22
+              'dev': '/dev/vdb'
+      seqwrite:
+          excute_count: 5
+      seqread:
+          excute_count: 5
+      randwrite:
+          excute_count: 5
+      randread:
+          excute_count: 5
+      latwrite:
+          excute_count: 5
+      latread:
+          excute_count: 5
+
+#  ping:
+#    ips:
+#      172.20.59.111:
+#        c: 5
+#        excute_count: 5
+#        port: 22
+#        pwd: password
+#        sys: linux
+#        target: 183.183.166.6
+#        username: root
+#
+#  iperf:
+#    ips:
+#      172.20.59.111:
+#        port: 22
+#        pwd: password
+#        sys: linux
+#        username: root
+#    serverips:
+#      127.0.0.1:
+#        port: 22
+#        pwd: password
+#        sys: linux
+#        username: root
+#    tcpnothread:
+#      excute_count: 5
+#      target: 183.183.166.6
+#    tcpthread:
+#      excute_count: 5
+#      target: 183.183.166.6
+#    udpnothread10g:
+#      excute_count: 5
+#      target: 183.183.166.6
+#    udpnothread1g:
+#      excute_count: 5
+#      target: 183.183.166.6
+#    udpthread10g:
+#      excute_count: 5
+#      target: 183.183.166.6
+#    udpthread1g:
+#      excute_count: 5
+#      target: 183.183.166.6
+
+
+- # 第二个情景 三台linux云主机测试(基础、综合、sas)
+  env:
+    - global:
+        management_ip: 172.20.1.34
+        port: 8080
+        admin: admin
+        password: password
+        des: '三台linux云主机基础、综合、计算、SAS存储'
+
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_1
+        return: destory_vm_1_1
+
+    - sleep:
+        time: 3
+
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_1
+
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_1
+    - sleep:
+        time: 3
+
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_1
+
+    - sleep:
+        time: 30
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $linux_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_1'
+        ip: 172.20.59.111
+        return: vm_1_1
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $linux_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_2'
+        ip: 172.20.59.112
+        return: vm_1_2
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $linux_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_3'
+        ip: 172.20.59.113
+        return: vm_1_3
+
+    - sleep:
+        time: 30
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $sas_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_1
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $sas_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_2
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $sas_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_3
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_1
+        vm_instance_uuid: url$vm_1_1
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_2
+        vm_instance_uuid: url$vm_1_2
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_3
+        vm_instance_uuid: url$vm_1_3
+
+    - sleep:
+        time: 30
+
+  unixbench:
+    ips:
+      '172.20.59.111':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        excute_count: 3
+        'i': 3
+        'c': 1
+      '172.20.59.112':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        excute_count: 3
+        'i': 3
+        'c': 1
+      '172.20.59.113':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        excute_count: 3
+        'i': 3
+        'c': 1
+  stream:
+    ips:
+      '172.20.59.111':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        excute_count: 3
+      '172.20.59.112':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        excute_count: 3
+      '172.20.59.113':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        excute_count: 3
+  netperf:
+    ips:
+      '172.20.59.111':
+          'sys': 'linux'
+          'username': 'root'
+          'pwd': 'password'
+          'port': 22
+          excute_count: 3
+      '172.20.59.112':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        excute_count: 3
+      '172.20.59.113':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        excute_count: 3
+  ebizzy:
+    ips:
+      '172.20.59.111':
+          'sys': 'linux'
+          'username': 'root'
+          'pwd': 'password'
+          'port': 22
+          excute_count: 3
+      '172.20.59.112':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        excute_count: 3
+      '172.20.59.113':
+        'sys': 'linux'
+        'username': 'root'
+        'pwd': 'password'
+        'port': 22
+        excute_count: 3
+  fio:
+      ips:
+          '172.20.59.111':
+              'sys': 'linux'
+              'username': 'root'
+              'pwd': 'password'
+              'port': 22
+              'dev': '/dev/vdb'
+          '172.20.59.112':
+              'sys': 'linux'
+              'username': 'root'
+              'pwd': 'password'
+              'port': 22
+              'dev': '/dev/vdb'
+          '172.20.59.113':
+              'sys': 'linux'
+              'username': 'root'
+              'pwd': 'password'
+              'port': 22
+              'dev': '/dev/vdb'
+      seqwrite:
+          excute_count: 5
+      seqread:
+          excute_count: 5
+      randwrite:
+          excute_count: 5
+      randread:
+          excute_count: 5
+      latwrite:
+          excute_count: 5
+      latread:
+          excute_count: 5
+
+- # 第三个情景 三台linux云主机测试（ssd）
+  env:
+    - global:
+        management_ip: 172.20.1.34
+        port: 8080
+        admin: admin
+        password: password
+        des: '三台linux云主机SSD存储'
+
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_1
+        return: destory_vm_1_1
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_2
+        return: destory_vm_1_2
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_3
+        return: destory_vm_1_3
+
+    - sleep:
+        time: 3
+
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_1
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_2
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_3
+
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_1
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_2
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_3
+
+    - sleep:
+        time: 3
+
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_1
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_2
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_3
+
+    - sleep:
+        time: 30
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $linux_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_1'
+        ip: 172.20.59.111
+        return: vm_1_1
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $linux_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_2'
+        ip: 172.20.59.112
+        return: vm_1_2
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $linux_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_3'
+        ip: 172.20.59.113
+        return: vm_1_3
+
+    - sleep:
+        time: 30
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $ssd_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_1
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $ssd_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_2
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $ssd_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_3
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_1
+        vm_instance_uuid: url$vm_1_1
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_2
+        vm_instance_uuid: url$vm_1_2
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_3
+        vm_instance_uuid: url$vm_1_3
+
+    - sleep:
+        time: 30
+
+  fio:
+      ips:
+          '172.20.59.111':
+              'sys': 'linux'
+              'username': 'root'
+              'pwd': 'password'
+              'port': 22
+              'dev': '/dev/vdb'
+          '172.20.59.112':
+              'sys': 'linux'
+              'username': 'root'
+              'pwd': 'password'
+              'port': 22
+              'dev': '/dev/vdb'
+          '172.20.59.113':
+              'sys': 'linux'
+              'username': 'root'
+              'pwd': 'password'
+              'port': 22
+              'dev': '/dev/vdb'
+      seqwrite:
+          excute_count: 5
+      seqread:
+          excute_count: 5
+      randwrite:
+          excute_count: 5
+      randread:
+          excute_count: 5
+      latwrite:
+          excute_count: 5
+      latread:
+          excute_count: 5
+
+- # 第四个情景 单台windows云主机基础、综合、计算、网络、SAS存储
+  env:
+    - global:
+        management_ip: 172.20.1.34
+        port: 8080
+        admin: admin
+        password: password
+        des: '单台Windows云主机基础、综合、计算、网络、SAS存储'
+
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_1
+        return: destory_vm_1_1
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_2
+        return: destory_vm_1_2
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_3
+        return: destory_vm_1_3
+
+    - sleep:
+        time: 3
+
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_1
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_2
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_3
+
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_1
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_2
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_3
+
+    - sleep:
+        time: 3
+
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_1
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_2
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_3
+
+    - sleep:
+        time: 30
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $windows_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_1'
+        ip: 172.20.59.111
+        return: vm_1_1
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $sas_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_1
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_1
+        vm_instance_uuid: url$vm_1_1
+
+    - sleep:
+        time: 20
+
+    - attach_l3_to_vm:
+        vm_uuid: url$vm_1_1
+        l3_net_uuid: $private_net_1
+
+    - sleep:
+        time: 100
+
+#    - ssh_cmd:
+#        'sys': 'windows'
+#        'username': 'Administrator'
+#        'pwd': 'Ltkj@2019'
+#        'port': 22
+#        'host': 172.20.59.111
+#        'cmd': 'ip_set 192.168.55.30'
+#
+#    - ssh_cmd:
+#        'sys': 'windows'
+#        'username': 'Administrator'
+#        'pwd': 'Ltkj@2019'
+#        'port': 22
+#        'host': 172.20.59.111
+#        'cmd': 'disk_set'
+
+  cinebench:
+    ips:
+      '172.20.59.111':
+          'sys': 'windows'
+          'username': 'Administrator'
+          'pwd': 'Ltkj@2019'
+          'port': 22
+          excute_count: 3
+  netperf:
+    ips:
+      '172.20.59.111':
+          'sys': 'windows'
+          'username': 'Administrator'
+          'pwd': 'Ltkj@2019'
+          'port': 22
+          excute_count: 3
+#  ping:
+#    ips:
+#     '127.0.0.1':
+#       'sys': 'linux'
+#       'username': 'root'
+#       'pwd': 'password'
+#       'port': 22
+#       excute_count: 20
+#       target: '192.168.55.30'
+#       c: 20
+#  iperf:
+#    ips:
+#     '127.0.0.1':
+#       'sys': 'linux'
+#       'username': 'root'
+#       'pwd': 'password'
+#       'port': 22
+#    serverips:
+#      '172.20.59.111':
+#        'sys': 'windows'
+#        'username': 'Administrator'
+#        'pwd': 'Ltkj@2019'
+#        'port': 22
+#    tcpnothread:
+#     target: '192.168.55.30'
+#     excute_count: 20
+#    tcpthread:
+#     thread:
+#     target: '192.168.55.30'
+#     excute_count: 20
+#    udpnothread1g:
+#     target: '192.168.55.30'
+#     excute_count: 20
+#    udpnothread10g:
+#     target: '192.168.55.30'
+#     excute_count: 20
+
+  fio:
+      ips:
+          '172.20.59.111':
+              'sys': 'windows'
+              'username': 'Administrator'
+              'pwd': 'Ltkj@2019'
+              'port': 22
+              'dev': '\\.\PHYSICALDRIVE1'
+      seqwrite:
+          excute_count: 5
+      seqread:
+          excute_count: 5
+      randwrite:
+          excute_count: 5
+      randread:
+          excute_count: 5
+      latwrite:
+          excute_count: 5
+      latread:
+          excute_count: 5
+
+- # 第五个情景 单台Windows云主机测试（ssd）
+  env:
+    - global:
+        management_ip: 172.20.1.34
+        port: 8080
+        admin: admin
+        password: password
+        des: '单台Windows云主机SSD存储'
+
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_1
+        return: destory_vm_1_1
+
+    - sleep:
+        time: 3
+
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_1
+
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_1
+    - sleep:
+        time: 3
+
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_1
+
+    - sleep:
+        time: 30
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $windows_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_1'
+        ip: 172.20.59.111
+        return: vm_1_1
+
+    - sleep:
+        time: 30
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $sas_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_1
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_1
+        vm_instance_uuid: url$vm_1_1
+
+    - sleep:
+        time: 100
+
+    - ssh_cmd:
+        'sys': 'windows'
+        'username': 'Administrator'
+        'pwd': 'Ltkj@2019'
+        'port': 22
+        'host': 172.20.59.111
+        'cmd': 'disk_set'
+
+  fio:
+      ips:
+          '172.20.59.111':
+              'sys': 'windows'
+              'username': 'Administrator'
+              'pwd': 'Ltkj@2019'
+              'port': 22
+              'dev': '\\.\PHYSICALDRIVE1'
+      seqwrite:
+          cmd_amend: ''
+          warm_count: 1
+          excute_count: 5
+      seqread:
+          excute_count: 5
+      randwrite:
+          excute_count: 5
+      randread:
+          excute_count: 5
+      latwrite:
+          excute_count: 5
+      latread:
+          excute_count: 5
+
+- # 第六个情景 三台Windows云主机测试(基础、综合、sas)
+  env:
+    - global:
+        management_ip: 172.20.1.34
+        port: 8080
+        admin: admin
+        password: password
+        des: '三台Windows云主机基础、综合、计算、SAS存储'
+
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_1
+        return: destory_vm_1_1
+
+    - sleep:
+        time: 3
+
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_1
+
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_1
+    - sleep:
+        time: 3
+
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_1
+
+    - sleep:
+        time: 30
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $windows_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_1'
+        ip: 172.20.59.111
+        return: vm_1_1
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $windows_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_2'
+        ip: 172.20.59.112
+        return: vm_1_2
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $windows_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_3'
+        ip: 172.20.59.113
+        return: vm_1_3
+
+    - sleep:
+        time: 30
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $sas_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_1
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $sas_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_2
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $sas_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_3
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_1
+        vm_instance_uuid: url$vm_1_1
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_2
+        vm_instance_uuid: url$vm_1_2
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_3
+        vm_instance_uuid: url$vm_1_3
+
+    - sleep:
+        time: 300
+
+    - ssh_cmd:
+        'sys': 'windows'
+        'username': 'Administrator'
+        'pwd': 'Ltkj@2019'
+        'port': 22
+        'host': 172.20.59.111
+        'cmd': 'disk_set'
+
+    - ssh_cmd:
+        'sys': 'windows'
+        'username': 'Administrator'
+        'pwd': 'Ltkj@2019'
+        'port': 22
+        'host': 172.20.59.112
+        'cmd': 'disk_set'
+
+    - ssh_cmd:
+        'sys': 'windows'
+        'username': 'Administrator'
+        'pwd': 'Ltkj@2019'
+        'port': 22
+        'host': 172.20.59.113
+        'cmd': 'disk_set'
+
+  cinebench:
+    ips:
+      '172.20.59.111':
+          'sys': 'windows'
+          'username': 'Administrator'
+          'pwd': 'Ltkj@2019'
+          'port': 22
+          excute_count: 3
+      '172.20.59.112':
+          'sys': 'windows'
+          'username': 'Administrator'
+          'pwd': 'Ltkj@2019'
+          'port': 22
+          excute_count: 3
+      '172.20.59.113':
+          'sys': 'windows'
+          'username': 'Administrator'
+          'pwd': 'Ltkj@2019'
+          'port': 22
+          excute_count: 3
+  netperf:
+    ips:
+      '172.20.59.111':
+          'sys': 'windows'
+          'username': 'Administrator'
+          'pwd': 'Ltkj@2019'
+          'port': 22
+          excute_count: 3
+      '172.20.59.112':
+          'sys': 'windows'
+          'username': 'Administrator'
+          'pwd': 'Ltkj@2019'
+          'port': 22
+          excute_count: 3
+      '172.20.59.113':
+          'sys': 'windows'
+          'username': 'Administrator'
+          'pwd': 'Ltkj@2019'
+          'port': 22
+          excute_count: 3
+  fio:
+      ips:
+          '172.20.59.111':
+              'sys': 'windows'
+              'username': 'Administrator'
+              'pwd': 'Ltkj@2019'
+              'port': 22
+              'dev': '\\.\PHYSICALDRIVE1'
+          '172.20.59.112':
+              'sys': 'windows'
+              'username': 'Administrator'
+              'pwd': 'Ltkj@2019'
+              'port': 22
+              'dev': '\\.\PHYSICALDRIVE1'
+          '172.20.59.113':
+              'sys': 'windows'
+              'username': 'Administrator'
+              'pwd': 'Ltkj@2019'
+              'port': 22
+              'dev': '\\.\PHYSICALDRIVE1'
+      seqwrite:
+          excute_count: 5
+      seqread:
+          excute_count: 5
+      randwrite:
+          excute_count: 5
+      randread:
+          excute_count: 5
+      latwrite:
+          excute_count: 5
+      latread:
+          excute_count: 5
+
+- # 第七个情景 三台linux云主机测试（SSD）
+  env:
+    - global:
+        management_ip: 172.20.1.34
+        port: 8080
+        admin: admin
+        password: password
+        des: '三台Windows云主机SSD存储'
+
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_1
+        return: destory_vm_1_1
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_2
+        return: destory_vm_1_2
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_3
+        return: destory_vm_1_3
+
+    - sleep:
+        time: 3
+
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_1
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_2
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_3
+
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_1
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_2
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_3
+
+    - sleep:
+        time: 3
+
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_1
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_2
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_3
+
+    - sleep:
+        time: 30
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $windows_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_1'
+        ip: 172.20.59.111
+        return: vm_1_1
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $windows_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_2'
+        ip: 172.20.59.112
+        return: vm_1_2
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $windows_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_3'
+        ip: 172.20.59.113
+        return: vm_1_3
+
+    - sleep:
+        time: 30
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $sas_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_1
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $sas_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_2
+
+    - create_data_volume:
+        disk_offering_uuid: $disk_offfering
+        primary_storage_uuid: $sas_uuid
+        host_uuid: $host_uuid_1
+        return: data_volume_1_3
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_1
+        vm_instance_uuid: url$vm_1_1
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_2
+        vm_instance_uuid: url$vm_1_2
+
+    - attach_data_volume_to_vm:
+        volume_uuid: url$data_volume_1_3
+        vm_instance_uuid: url$vm_1_3
+
+    - sleep:
+        time: 300
+
+    - ssh_cmd:
+        'sys': 'windows'
+        'username': 'Administrator'
+        'pwd': 'Ltkj@2019'
+        'port': 22
+        'host': 172.20.59.111
+        'cmd': 'disk_set'
+
+    - ssh_cmd:
+        'sys': 'windows'
+        'username': 'Administrator'
+        'pwd': 'Ltkj@2019'
+        'port': 22
+        'host': 172.20.59.112
+        'cmd': 'disk_set'
+
+    - ssh_cmd:
+        'sys': 'windows'
+        'username': 'Administrator'
+        'pwd': 'Ltkj@2019'
+        'port': 22
+        'host': 172.20.59.113
+        'cmd': 'disk_set'
+
+  fio:
+      ips:
+          '172.20.59.111':
+              'sys': 'windows'
+              'username': 'Administrator'
+              'pwd': 'Ltkj@2019'
+              'port': 22
+              'dev': '\\.\PHYSICALDRIVE1'
+          '172.20.59.112':
+              'sys': 'windows'
+              'username': 'Administrator'
+              'pwd': 'Ltkj@2019'
+              'port': 22
+              'dev': '\\.\PHYSICALDRIVE1'
+          '172.20.59.113':
+              'sys': 'windows'
+              'username': 'Administrator'
+              'pwd': 'Ltkj@2019'
+              'port': 22
+              'dev': '\\.\PHYSICALDRIVE1'
+      seqwrite:
+          excute_count: 5
+      seqread:
+          excute_count: 5
+      randwrite:
+          excute_count: 5
+      randread:
+          excute_count: 5
+      latwrite:
+          excute_count: 5
+      latread:
+          excute_count: 5
+
+- # 第八个情景
+  env:
+    - global:
+        management_ip: 172.20.1.34
+        port: 8080
+        admin: admin
+        password: password
+        des: '清除资源'
+
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_1
+        return: destory_vm_1_1
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_2
+        return: destory_vm_1_2
+    - destroy_vm_instance:
+        vm_uuid: url$vm_1_3
+        return: destory_vm_1_3
+
+    - sleep:
+        time: 3
+
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_1
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_2
+    - expunge_vm_instance:
+        vm_uuid: url$vm_1_3
+
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_1
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_2
+    - delete_data_volume:
+        volume_uuid: url$data_volume_1_3
+
+    - sleep:
+        time: 3
+
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_1
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_2
+    - expunge_data_volume:
+        volume_uuid: url$data_volume_1_3

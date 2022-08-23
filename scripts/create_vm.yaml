@@ -1,0 +1,37 @@
+- # 第零个情景 单台linux云主机测试(基础、综合、sas)
+  env:
+    - global:
+        management_ip: 172.20.1.34
+        port: 8080
+        admin: admin
+        password: password
+        des: '单台linux云主机基础、综合、计算、SAS存储, 正向网络'
+
+    - define:
+        ssd_uuid: 85fd917c00d14904b01c09b72012aece
+        sas_uuid: 0cf9e00db3624e16bd153ccd4aeabb61
+        zstack_ps: 2756333a6dd748a787c61bab1cb10aac
+        cluster_uuid_1: 922a863b0fe24f14ae27121666f0301f
+        linux_image: 518667d6a22a45dba9e7a6c7d5c6d667
+        windows_image: b4339ac8c1d246ae82fa36af97659ebd
+        public_net: d1461abf3bde4645916bc0da222b647f
+        private_net_1: 09ff3a227da4490c876840f6fbde9d41
+        private_net_2: 09ff3a227da4490c876840f6fbde9d41
+        host_uuid_1: bd219d7139e4477f8af8b342a31d98af
+        host_uuid_2: 38a2f283ece44ec48b72559015cd3bfd
+        ip_1: 172.20.59.111
+        ip_2: 172.20.59.112
+        ip_3: 172.20.59.113
+        disk_offfering: 81993d0744e04408ab22fa342ed6f0f2
+
+    - create_vm_instance:
+        instance_offering_uuid: 634a50f6300a43278a9c254a9eeee70f
+        storage_uuid_for_root: $zstack_ps
+        image_uuid: $linux_image
+        cluster_uuid: $cluster_uuid_1
+        l3_net_uuid: $public_net
+        host_uuid: $host_uuid_1
+        name: 'autotest_vm_1'
+        ip: 172.20.59.111
+        return: vm_1_1
+
